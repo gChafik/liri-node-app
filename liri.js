@@ -7,7 +7,9 @@ let fs = require("fs");
 let moment = require("moment");
 let input = process.argv[2];
 let input2 = process.argv[3];
-let logObj = {};
+let logObj_concert = {};
+let logObj_spotify = {};
+let logObj_movie = {};
 
 if(input === "concert-this"){
     concertThis(input2);
@@ -28,11 +30,11 @@ function concertThis(input2){
     console.log("Venue: ", response.data[1].venue.name);
     console.log("Location: ", response.data[1].venue.city + ", " + response.data[1].venue.region + ", " +response.data[1].venue.country);
     console.log("Date: ", moment(response.data[1].datetime).format("MM/DD/YYYY"));
-    logObj.Venue = response.data[1].venue.name;
-    logObj.Location = response.data[1].venue.city;
-    logObj.Date = moment(response.data[1].datetime).format("MM/DD/YYYY");
-    console.log(logObj);
-    appendToFile(JSON.stringify(logObj));
+    logObj_concert.Venue = response.data[1].venue.name;
+    logObj_concert.Location = response.data[1].venue.city;
+    logObj_concert.Date = moment(response.data[1].datetime).format("MM/DD/YYYY");
+    console.log(logObj_concert);
+    appendToFile(JSON.stringify(logObj_concert));
       
   })
   .catch(function(error) {
@@ -65,12 +67,20 @@ function spotifyThis(input2){
       return console.log('Error occurred: ' + err);
     }
     else{
-  for (let index = 0; index < 5; index++) {
-    console.log("Artist Name: ", JSON.stringify(data.tracks.items[index].album.artists[index].name, null, 2));
-    console.log("Song Name: ", JSON.stringify(data.tracks.items[index].name, null, 2)); 
-    console.log("Song Preview: ", JSON.stringify(data.tracks.items[index].preview_url, null, 2));
-    console.log("Album Name: ", JSON.stringify(data.tracks.items[index].album.name, null, 2));   
-  }
+  
+    console.log("Artist Name: ", JSON.stringify(data.tracks.items[0].album.artists[0].name, null, 2));
+    console.log("Song Name: ", JSON.stringify(data.tracks.items[0].name, null, 2)); 
+    console.log("Song Preview: ", JSON.stringify(data.tracks.items[0].preview_url, null, 2));
+    console.log("Album Name: ", JSON.stringify(data.tracks.items[0].album.name, null, 2));   
+
+    //append to log.txt file
+    logObj_spotify.Artist = data.tracks.items[0].album.artists[0].name;
+    logObj_spotify.Song_Name = data.tracks.items[0].name;
+    logObj_spotify.Song_Preview = data.tracks.items[0].preview_url;
+    logObj_spotify.Album_Name = data.tracks.items[0].album.name;
+    console.log(logObj_spotify);
+    appendToFile(JSON.stringify(logObj_spotify));
+  
   }
   });
 }
@@ -84,8 +94,20 @@ function movieThis(input2){
     console.log("Rotten Tomato Rating: " + response.data.Metascore);
     console.log("Country the Movie was produced: " + response.data.Country);
     console.log("Language: " + response.data.Language);
-    console.log("Plot of the Movie: " +response.data.Plot);
+    console.log("Plot of the Movie: " + response.data.Plot);
     console.log("Actors: " + response.data.Actors);
+
+    //append to log.txt file
+    logObj_movie.Title = response.data.Title;
+    logObj_movie.Year = response.data.Year;
+    logObj_movie.imdbRating = response.data.imdbRating;
+    logObj_movie.Metascore = response.data.Metascore;
+    logObj_movie.Country = response.data.Country;
+    logObj_movie.Language = response.data.Language;
+    logObj_movie.Plot = response.data.Plot;
+    logObj_movie.Actors = response.data.Actors;
+    console.log(logObj_movie);
+    appendToFile(JSON.stringify(logObj_movie));
   }
 );
 
@@ -95,9 +117,20 @@ function doIt(){
   fs.readFile("random.txt", "utf8", function(err, data){
     console.log(data);
     data = data.split(",");
-    
-    console.log(data[1]);
-    spotifyThis(data[1]);
+
+    let command = data[0];
+
+    switch (command) {
+      case "spotify-this-song":
+        spotifyThis()
+        break;
+      case "movie-this":
+        movieThis()
+        break;
+      case "concert-this":
+        concertThis()
+        break;
+    }
   })
 }
 
